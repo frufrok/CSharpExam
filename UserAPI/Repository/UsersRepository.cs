@@ -87,5 +87,25 @@ namespace CSharpExamUserAPI.Repository
             }
             else throw new Exception("Wrong password");
         }
+
+        public Guid GetUserGuid(string email)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Email.ToLower().Equals(email.ToLower()));
+            if (user != null)
+            {
+                return user.Guid;
+            }
+            else throw new Exception("Пользователя с указанных Email не существует");
+        }
+
+        public string GetUserEmail(Guid guid)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Guid.Equals(guid));
+            if (user != null)
+            {
+                return user.Email;
+            }
+            else throw new Exception("Пользователя с указанным GUID не существует.");
+        }
     }
 }

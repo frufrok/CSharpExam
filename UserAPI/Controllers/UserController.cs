@@ -27,6 +27,41 @@ namespace CSharpExamUserAPI.Controllers
             return _userRepository.GetUsers().ToList();
         }
 
+        [AllowAnonymous]
+        [HttpGet(template:"GetUserGuid")]
+        public ActionResult GetUserGuid([FromQuery] string email)
+        {
+            if (SharedMethods.EmailMatchesPattern(email))
+            {
+                try
+                {
+                    return Ok(_userRepository.GetUserGuid(email));
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, ex.Message);
+                }
+            }
+            else
+            {
+                return StatusCode(400, "Email не соответствует шаблону.");
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet(template: "GetUserEmail")]
+        public ActionResult GetUserEmail([FromQuery] Guid guid)
+        {
+            try
+            {
+                return Ok(_userRepository.GetUserEmail(guid));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpPost(template:"AddUser")]
         [Authorize(Roles = "ADMIN")]
         public ActionResult AddUser([FromQuery] string email, string password, int roleId)

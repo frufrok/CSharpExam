@@ -72,12 +72,12 @@ namespace MessageAPI
             builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
             {
                 containerBuilder
-                    .Register(c => new UsersDbContext(configRoot.GetConnectionString("db")))
+                    .Register(c => new MessageDbContext(configRoot.GetConnectionString("db")))
                     .InstancePerDependency();
             });
 
             // Решение: Зарегистрирован сервис, предоставляющий синглтон репозитория.
-            builder.Services.AddSingleton<IUsersRepository, UsersRepository>();
+            builder.Services.AddSingleton<IMessageRepository, MessageRepository>();
 
             // Решение: Зарегистрирован сервис аутентификации.
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -98,7 +98,7 @@ namespace MessageAPI
                 });
 
             //builder.Services.AddScoped<IUserAuthenticationService,UserAuthenticationServiceMock>();
-            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+            builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
             var app = builder.Build();
 
@@ -116,6 +116,8 @@ namespace MessageAPI
             app.UseAuthorization();
 
             app.MapControllers();
+
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             app.Run();
         }

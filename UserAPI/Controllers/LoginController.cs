@@ -54,7 +54,7 @@ namespace UserAPI.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost(template: "Login")]
+        [HttpGet(template: "Login")]
         public ActionResult Login([FromQuery] string email, string password)
         {
             try
