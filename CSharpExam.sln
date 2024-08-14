@@ -5,6 +5,7 @@ VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0155F935-1AA9-4BB7-8B11-3908C578C0EB}"
 	ProjectSection(SolutionItems) = preProject
+		PostmanTest.postman_collection.json = PostmanTest.postman_collection.json
 		README.md = README.md
 	EndProjectSection
 EndProject
