@@ -10,11 +10,11 @@
         }
       ],
       "UpstreamPathTemplate": "/User/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete"],
       "SwaggerKey": "UserAPI"
     },
     {
-      "DownstreamPathTemplate": "/Role/{everything}",
+      "DownstreamPathTemplate": "/Login/{everything}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
@@ -22,7 +22,34 @@
           "Port": 7262
         }
       ],
-      "UpstreamPathTemplate": "/Role/{everything}",
+      "UpstreamPathTemplate": "/Login/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "SwaggerKey": "UserAPI"
+    },
+    {
+      "DownstreamPathTemplate": "/Restricted/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7262
+        }
+      ],
+      "UpstreamPathTemplate": "/Restricted/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "SwaggerKey": "UserAPI"
+    },
+
+    {
+      "DownstreamPathTemplate": "/Message/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7261
+        }
+      ],
+      "UpstreamPathTemplate": "/Message/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post" ],
       "SwaggerKey": "UserAPI"
     }
@@ -41,6 +68,18 @@
           "Name": "Users API",
           "Version": "v1",
           "Url": "https://localhost:7262/swagger/v1/swagger.json"
+        }
+      ]
+    },
+
+    {
+      "Key": "MessageAPI",
+      "TransformByOcelogConfig": false,
+      "Config": [
+        {
+          "Name": "Message API",
+          "Version": "v1",
+          "Url": "https://localhost:7261/swagger/v1/swagger.json"
         }
       ]
     }

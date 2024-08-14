@@ -11,5 +11,7 @@ namespace CSharpExamUserAPI.Repository
         public Guid AddUser(string email, string password, RoleId roleId);
         public UserDto UserCheck(string email, string password);
         public Guid DeleteUser(string email);
+        public Guid GetUserGuid(string email);
+        public string GetUserEmail(Guid guid);
     }
 }
