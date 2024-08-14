@@ -10,7 +10,7 @@ namespace UserAPI.Controllers
     [Route("[controller]")]
     public class RestrictedController : ControllerBase
     {
-        [HttpGet(template:"get_id_from_token")]
+        [HttpGet(template:"GetIdFromToken")]
         [Authorize(Roles = "ADMIN,USER")]
         public ActionResult GetIdFromToken()
         {

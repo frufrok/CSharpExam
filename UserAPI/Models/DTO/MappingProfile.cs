@@ -16,7 +16,6 @@ namespace UserAPI.Models.DTO
                 .ForMember(user => user.Salt, opts => opts.Ignore())
                 .ForMember(user => user.RoleId, opts => opts.MapFrom(dto => dto.RoleId))
                 .ReverseMap();
-            //CreateMap<User, UserDto>(MemberList.Destination).ReverseMap();
         }
     }
 }

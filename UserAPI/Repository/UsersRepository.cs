@@ -20,21 +20,14 @@ namespace CSharpExamUserAPI.Repository
 
         public Guid AddUser(string email, string password, RoleId roleId)
         {
-            if (roleId == RoleId.ADMIN)
+            var user = new User()
             {
-                var c = _context.Users.Count(x => x.RoleId == RoleId.ADMIN);
-                if (c > 0)
-                {
-                    throw new Exception("Администратор может быть только один.");
-                }
-            }
+                Guid = Guid.NewGuid(),
+                Email = email,
+                RoleId = roleId,
+                Salt = new byte[16]
+            };
 
-            var user = new User();
-            user.Guid = Guid.NewGuid();
-            user.Email = email;
-            user.RoleId = roleId;
-
-            user.Salt = new byte[16];
             new Random().NextBytes(user.Salt);
 
             var data = Encoding.ASCII.GetBytes(password).Concat(user.Salt).ToArray();
@@ -50,6 +43,11 @@ namespace CSharpExamUserAPI.Repository
             return user.Guid;
         }
 
+        public bool EmailIsFree(string email)
+        {
+            return _context.Users.FirstOrDefault(x => x.Email.ToLower().Equals(email.ToLower())) == null;
+        }
+
         public IEnumerable<UserDto> GetUsers()
         {
             return _context.Users.Select(x => _mapper.Map<UserDto>(x)).ToList();
@@ -58,6 +56,19 @@ namespace CSharpExamUserAPI.Repository
         public bool HaveUsers()
         {
             return _context.Users.Any();
+        }
+
+        public Guid DeleteUser(string email)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Email.ToLower().Equals(email.ToLower()));
+            if (user != null)
+            {
+                Guid result = new Guid(user.Guid.ToByteArray());
+                _context.Users.Remove(user);
+                _context.SaveChanges();
+                return result;
+            }
+            else throw new ArgumentException("В списке пользователей нет пользователя с указанным email.");
         }
 
         public UserDto UserCheck(string Email, string password)

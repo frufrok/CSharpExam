@@ -1,6 +1,10 @@
-﻿using CSharpExamUserAPI.Models.DTO;
+﻿using CSharpExamUserAPI.Models;
+using CSharpExamUserAPI.Models.DTO;
 using CSharpExamUserAPI.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using UserAPI.Controllers;
 
 namespace CSharpExamUserAPI.Controllers
 {
@@ -8,61 +12,126 @@ namespace CSharpExamUserAPI.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IUsersRepository _repo;
-        public UserController(IUsersRepository repo)
+        private readonly IConfiguration _config;
+        private readonly IUsersRepository _userRepository;
+        public UserController(IConfiguration config, IUsersRepository userRepository)
         {
-            _repo = repo;
+            _config = config;
+            _userRepository = userRepository;
         }
 
-        [HttpGet(template:"get_users")]
+        [AllowAnonymous]
+        [HttpGet(template:"GetUsers")]
         public ActionResult<IEnumerable<UserDto>> GetUsers()
         {
-            return _repo.GetUsers().ToList();
+            return _userRepository.GetUsers().ToList();
         }
 
-        /*
-        
-        [HttpPost(template:"add_user")]
-        public ActionResult<int> AddUser([FromQuery] string email, string password)
+        [HttpPost(template:"AddUser")]
+        [Authorize(Roles = "ADMIN")]
+        public ActionResult AddUser([FromQuery] string email, string password, int roleId)
         {
-            if (_repo.HaveUsers())
+            try
             {
-                int roleId = _repo.GetRoleId(Models.RoleId.USER);
-                if (roleId == -1)
+                ActionResult result(string email, string password)
                 {
-                    return StatusCode(409);
+                    if (Enum.IsDefined(typeof(RoleId), roleId))
+                    {
+                        var id = _userRepository.AddUser(email, password, RoleId.ADMIN);
+                        return Ok(id);
+                    }
+                    else
+                    {
+                        return StatusCode(400, "Задан несуществующий ID роли.");
+                    }
+
+                }
+                return DoIfEmailAndPasswordAreValid(email, password, result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete(template:"DeleteUser")]
+        [Authorize(Roles = "ADMIN")]
+        public ActionResult DeleteUser([FromQuery] string email)
+        {
+            if (SharedMethods.EmailMatchesPattern(email))
+            {
+                var self = GetCurrentUser();
+                if (self != null)
+                {
+                    if (!email.ToLower().Equals(self.Email.ToLower()))
+                    {
+                        try
+                        {
+                            if (_userRepository.EmailIsFree(email))
+                            {
+                                return StatusCode(400, "Такого пользователя нет в базе данных.");
+                            }
+                            else return Ok(_userRepository.DeleteUser(email));
+                        }
+                        catch (Exception ex)
+                        {
+                            return StatusCode(500, ex);
+                        }
+                    }
+                    else
+                    {
+                        return StatusCode(400, "Нельзя удалять собственный email.");
+                    }
+                }
+                else return StatusCode(400, "Не удалось считать данные пользователя из предоставленного токена.");
+            }
+            else
+            {
+                return StatusCode(400, "Email не соответствует шаблону.");
+            }
+        }
+
+        private ActionResult DoIfEmailAndPasswordAreValid(string email, string password, Func<string, string, ActionResult> workToDo)
+        {
+            if (SharedMethods.EmailMatchesPattern(email))
+            {
+                if (SharedMethods.PasswordMatchesLengthRequirement(password))
+                {
+                    if (SharedMethods.PasswordMatchesPattern(password))
+                    {
+                        return workToDo.Invoke(email, password);
+                    }
+                    else
+                    {
+                        return StatusCode(400, "Пароль не соответсвует шаблону: он должен содержать хотя бы по одной букве в нижнем и верхнем регистрах и хотя бы одну цифру.");
+                    }
                 }
                 else
                 {
-                    var user = new UserDto()
-                    {
-                        Email = email,
-                        PasswordHash = password.GetHashCode(),
-                        RoleId = roleId
-                    };
-                    return _repo.AddUser(user);
+                    return StatusCode(400, "Пароль имеет некорректную длинну. Задайте пароль длиной от 8 до 32 символов.");
                 }
             }
             else
             {
-                int roleId = _repo.GetRoleId(Models.RoleId.ADMIN);
-                if (roleId == -1)
-                {
-                    return StatusCode(409);
-                }
-                else
-                {
-                    var user = new UserDto()
-                    {
-                        Email = email,
-                        PasswordHash = password.GetHashCode(),
-                        RoleId = roleId
-                    };
-                    return _repo.AddUser(user);
-                }
+                return StatusCode(400, "Email не соответствует шаблону.");
             }
         }
-        */
 
+        private UserDto? GetCurrentUser()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                var userClaims = identity.Claims;
+                return new UserDto()
+                {
+                    Email = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
+                    RoleId = (RoleId)Enum.Parse(typeof(RoleId),
+                        userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value),
+                    Guid = Guid.Parse(userClaims.FirstOrDefault(x => x.Type == ClaimTypes.SerialNumber)?.Value)
+                };
+            }
+            else return null;
+        }
     }
 }
