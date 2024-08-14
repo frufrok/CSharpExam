@@ -2,11 +2,11 @@
 {
     public class Role
     {
-        public int? Id { get; set; }
-        public RoleCodes? RoleCode { get; set; }
-        public virtual List<User>? Users { get; set; } = [];
+        public RoleId RoleId { get; set; }
+        public string Name { get; set; }
+        public virtual List<User> Users { get; set; } = [];
     }
-    public enum RoleCodes
+    public enum RoleId
     {
         ADMIN = 0,
         USER = 1

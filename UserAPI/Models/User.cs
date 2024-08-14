@@ -2,10 +2,12 @@
 {
     public class User
     {
-        public int? Id { get; set; }
-        public string? Email { get; set; }
-        public int? PasswordHash { get; set; }
-        public int? RoleId { get; set; }
-        public virtual Role? Role { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
+        public string Email { get; set; }
+        public byte[] Password { get; set; }
+        public byte[] Salt { get; set; }
+        public RoleId RoleId { get; set; }
+        public virtual Role Role { get; set; }
     }
 }

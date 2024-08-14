@@ -3,6 +3,7 @@ using System;
 using CSharpExamUserAPI.Models.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CSharpExamUserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240814062832_ThirdMigration")]
+    partial class ThirdMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,10 +92,6 @@ namespace CSharpExamUserAPI.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasDatabaseName("IX_Users_Email");
-
-                    b.HasIndex("Guid")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Users_Guid");
 
                     b.HasIndex("RoleId");
 

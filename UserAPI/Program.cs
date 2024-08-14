@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Cryptography;
 using System.Text;
-using UserAPI.Authentication;
+using UserAPI.Models.DTO;
 
 namespace CSharpExamUserAPI
 {
@@ -97,8 +97,8 @@ namespace CSharpExamUserAPI
                     };
                 });
 
-            builder.Services.AddScoped<IUserAuthenticationService,UserAuthenticationServiceMock>();
-
+            //builder.Services.AddScoped<IUserAuthenticationService,UserAuthenticationServiceMock>();
+            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
             var app = builder.Build();
 

@@ -5,11 +5,9 @@ namespace CSharpExamUserAPI.Repository
 {
     public interface IUsersRepository
     {
-        public int AddUser(UserDto user);
+        public Guid AddUser(string email, string password, RoleId roleId);
         public IEnumerable<UserDto> GetUsers();
-        public int AddRole(RoleDto role);
-        public IEnumerable<RoleDto> GetRoles();
-        public int GetRoleId(RoleCodes roleCode);
         public bool HaveUsers();
+        public UserDto UserCheck(string email, string password);
     }
 }

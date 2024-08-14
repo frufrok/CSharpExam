@@ -11,11 +11,11 @@ namespace UserAPI.Controllers
     public class RestrictedController : ControllerBase
     {
         [HttpGet(template:"get_id_from_token")]
-        [Authorize(Roles = "0,1")]
+        [Authorize(Roles = "ADMIN,USER")]
         public ActionResult GetIdFromToken()
         {
             var user = GetCurrentUser();
-            return Ok(user.Email);
+            return Ok(user.Guid);
         }
 
         private UserDto? GetCurrentUser()
@@ -26,14 +26,10 @@ namespace UserAPI.Controllers
                 var userClaims = identity.Claims;
                 return new UserDto()
                 {
-                    Email = userClaims
-                        .FirstOrDefault(
-                            x => x.Type == ClaimTypes.NameIdentifier)?
-                            .Value,
-                    RoleId = int.Parse(
-                        userClaims.FirstOrDefault(
-                            x => x.Type == ClaimTypes.Role)?
-                        .Value)
+                    Email = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
+                    RoleId = (RoleId)Enum.Parse(typeof(RoleId),
+                        userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value),
+                    Guid = Guid.Parse(userClaims.FirstOrDefault(x => x.Type == ClaimTypes.SerialNumber)?.Value)
                 };
             }
             else return null;

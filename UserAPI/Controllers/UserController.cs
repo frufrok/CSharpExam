@@ -20,12 +20,14 @@ namespace CSharpExamUserAPI.Controllers
             return _repo.GetUsers().ToList();
         }
 
+        /*
+        
         [HttpPost(template:"add_user")]
         public ActionResult<int> AddUser([FromQuery] string email, string password)
         {
             if (_repo.HaveUsers())
             {
-                int roleId = _repo.GetRoleId(Models.RoleCodes.USER);
+                int roleId = _repo.GetRoleId(Models.RoleId.USER);
                 if (roleId == -1)
                 {
                     return StatusCode(409);
@@ -43,7 +45,7 @@ namespace CSharpExamUserAPI.Controllers
             }
             else
             {
-                int roleId = _repo.GetRoleId(Models.RoleCodes.ADMIN);
+                int roleId = _repo.GetRoleId(Models.RoleId.ADMIN);
                 if (roleId == -1)
                 {
                     return StatusCode(409);
@@ -60,5 +62,7 @@ namespace CSharpExamUserAPI.Controllers
                 }
             }
         }
+        */
+
     }
 }

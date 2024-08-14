@@ -2,6 +2,8 @@
 using CSharpExamUserAPI.Models;
 using CSharpExamUserAPI.Models.DTO;
 using CSharpExamUserAPI.Models.Context;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace CSharpExamUserAPI.Repository
 {
@@ -16,45 +18,36 @@ namespace CSharpExamUserAPI.Repository
             _context = context;
         }
 
-        public int AddRole(RoleDto role)
+        public Guid AddUser(string email, string password, RoleId roleId)
         {
-            if (_context.Roles.Any(x => x.RoleCode == role.RoleCode))
+            if (roleId == RoleId.ADMIN)
             {
-                return -1;
+                var c = _context.Users.Count(x => x.RoleId == RoleId.ADMIN);
+                if (c > 0)
+                {
+                    throw new Exception("Администратор может быть только один.");
+                }
             }
-            else
-            {
-                var result = _mapper.Map<Role>(role);
-                _context.Roles.Add(result);
-                _context.SaveChanges();
-                return result.Id ?? -1;
-            }
-        }
 
-        public int AddUser(UserDto user)
-        {
-            if (_context.Users.Any(x => x.Email.ToLower().Equals(user.Email.ToLower())))
-            {
-                return -1;
-            }
-            else
-            {
-                var result = _mapper.Map<User>(user);
-                _context.Users.Add(result);
-                _context.SaveChanges();
-                return result.Id ?? -1;
-            }
-        }
+            var user = new User();
+            user.Guid = Guid.NewGuid();
+            user.Email = email;
+            user.RoleId = roleId;
 
-        public int GetRoleId(RoleCodes roleCode)
-        {
-            var result = _context.Roles.FirstOrDefault(x => x.RoleCode == roleCode);
-            return result == null ? -1 : result.Id ?? -1;
-        }
+            user.Salt = new byte[16];
+            new Random().NextBytes(user.Salt);
 
-        public IEnumerable<RoleDto> GetRoles()
-        {
-            return _context.Roles.Select(x => _mapper.Map<RoleDto>(x)).ToList();
+            var data = Encoding.ASCII.GetBytes(password).Concat(user.Salt).ToArray();
+
+            SHA512 shaM = new SHA512Managed();
+
+            user.Password = shaM.ComputeHash(data);
+
+            _context.Users.Add(user);
+
+            _context.SaveChanges();
+
+            return user.Guid;
         }
 
         public IEnumerable<UserDto> GetUsers()
@@ -65,6 +58,23 @@ namespace CSharpExamUserAPI.Repository
         public bool HaveUsers()
         {
             return _context.Users.Any();
+        }
+
+        public UserDto UserCheck(string Email, string password)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Email == Email);
+
+            if (user == null) throw new Exception("User not found");
+
+            var data = Encoding.ASCII.GetBytes(password).Concat(user.Salt).ToArray();
+            var shaM = new SHA512Managed();
+            var bspassword = shaM.ComputeHash(data);
+
+            if (user.Password.SequenceEqual(bspassword))
+            {
+                return _mapper.Map<UserDto>(user);
+            }
+            else throw new Exception("Wrong password");
         }
     }
 }

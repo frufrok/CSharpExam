@@ -1,4 +1,5 @@
-﻿using CSharpExamUserAPI.Models.DTO;
+﻿using CSharpExamUserAPI.Models;
+using CSharpExamUserAPI.Models.DTO;
 using CSharpExamUserAPI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using UserAPI.Authentication;
 using UserAPI.Models.DTO;
 
 namespace UserAPI.Controllers
@@ -17,18 +17,62 @@ namespace UserAPI.Controllers
     public class LoginController : ControllerBase
     {
         private readonly IConfiguration _config;
-        private readonly IUserAuthenticationService _authService;
-        public LoginController(IConfiguration config, IUserAuthenticationService service)
+        private readonly IUsersRepository _userRepository;
+        public LoginController(IConfiguration config, IUsersRepository userRepository)
         {
             _config = config;
-            _authService = service;
+            _userRepository = userRepository;
         }
         [AllowAnonymous]
         [HttpPost]
-        public ActionResult Login([FromBody] LoginDto login)
+        public ActionResult Login([FromBody] LoginDto userLogin)
         {
-            var user = _authService.Authenticate(login);
-            return user != null ? Ok(CreateToken(user)) : NotFound("User not found");
+            try
+            {
+                var user = _userRepository.UserCheck(userLogin.Email, userLogin.Password);
+
+                var token = CreateToken(user);
+
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("AddAdmin")]
+        public ActionResult AddAdmin([FromBody] LoginDto userLogin)
+        {
+            try
+            {
+                _userRepository.AddUser(userLogin.Email, userLogin.Password, RoleId.ADMIN);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("AddUser")]
+        [Authorize(Roles = "ADMIN")]
+        public ActionResult AddUser([FromBody] LoginDto userLogin)
+        {
+            try
+            {
+                _userRepository.AddUser(userLogin.Email, userLogin.Password, RoleId.USER);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+            return Ok();
         }
 
         public static class RSATools
@@ -52,7 +96,8 @@ namespace UserAPI.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Email),
-                new Claim(ClaimTypes.Role, user.RoleId.ToString())
+                new Claim(ClaimTypes.Role, user.RoleId.ToString()),
+                new Claim(ClaimTypes.SerialNumber, user.Guid.ToString())
             };
 
             var token = new JwtSecurityToken(
