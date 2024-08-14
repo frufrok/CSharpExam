@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using UserAPI.Authentication;
 using UserAPI.Models.DTO;
@@ -30,12 +31,24 @@ namespace UserAPI.Controllers
             return user != null ? Ok(CreateToken(user)) : NotFound("User not found");
         }
 
+        public static class RSATools
+        {
+            public static RSA GetPrivateKey()
+            {
+                var f = System.IO.File.ReadAllText("rsa/private_key.pem");
+                var rsa = RSA.Create();
+                rsa.ImportFromPem(f);
+                return rsa;
+            }
+        }
+  
         private string CreateToken(UserDto user)
         {
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            //var key = new SymmetricSecurityKey(
+            //    Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var key = new RsaSecurityKey(RSATools.GetPrivateKey());
             var credentials = new SigningCredentials(
-                key, SecurityAlgorithms.HmacSha256);
+                key, SecurityAlgorithms.RsaSha256);
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Email),

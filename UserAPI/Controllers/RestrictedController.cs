@@ -12,7 +12,6 @@ namespace UserAPI.Controllers
     {
         [HttpGet(template:"get_id_from_token")]
         [Authorize(Roles = "0,1")]
-        //[AllowAnonymous]
         public ActionResult GetIdFromToken()
         {
             var user = GetCurrentUser();
