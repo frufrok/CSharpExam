@@ -1,26 +1,21 @@
 
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using CSharpExamUserAPI.Models.Context;
-using CSharpExamUserAPI.Repository;
+using UserAPI.Models.Context;
+using UserAPI.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Cryptography;
 using System.Text;
+using UserAPI.Authentication;
 using UserAPI.Models.DTO;
+using UserAPI.rsa;
 
 namespace CSharpExamUserAPI
 {
     public class Program
     {
-        private static RSA GetPublicKey()
-        {
-            var f = File.ReadAllText("rsa/public_key.pem");
-            var rsa = RSA.Create();
-            rsa.ImportFromPem(f);
-            return rsa;
-        }
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -76,6 +71,9 @@ namespace CSharpExamUserAPI
                     .InstancePerDependency();
             });
 
+            // Решение: Регистрация сервиса, предоставляющего токены.
+            builder.Services.AddSingleton<ITokenSource, RSATokenSource>();
+            
             // Решение: Зарегистрирован сервис, предоставляющий синглтон репозитория.
             builder.Services.AddSingleton<IUsersRepository, UsersRepository>();
 
@@ -91,14 +89,11 @@ namespace CSharpExamUserAPI
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
-                        //IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
-                        //    .GetBytes(builder.Configuration["Jwt:Key"]))
-                        IssuerSigningKey = new RsaSecurityKey(GetPublicKey())
+                        IssuerSigningKey = new RsaSecurityKey(RSATokenSource.GetPublicKey())
                     };
                 });
 
-            //builder.Services.AddScoped<IUserAuthenticationService,UserAuthenticationServiceMock>();
-            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+            //builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
             var app = builder.Build();
 

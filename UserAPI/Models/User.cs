@@ -1,4 +1,4 @@
-﻿namespace CSharpExamUserAPI.Models
+﻿namespace UserAPI.Models
 {
     public class User
     {

@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
-using CSharpExamUserAPI.Models;
-using CSharpExamUserAPI.Models.DTO;
-using CSharpExamUserAPI.Models.Context;
+using UserAPI.Models;
+using UserAPI.Models.DTO;
+using UserAPI.Models.Context;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace CSharpExamUserAPI.Repository
+namespace UserAPI.Repository
 {
     public class UsersRepository : IUsersRepository
     {

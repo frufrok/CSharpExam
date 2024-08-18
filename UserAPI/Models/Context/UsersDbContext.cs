@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace CSharpExamUserAPI.Models.Context
+namespace UserAPI.Models.Context
 {
     public class UsersDbContext : DbContext
     {

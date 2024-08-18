@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using CSharpExamUserAPI.Models;
-using CSharpExamUserAPI.Models.DTO;
+using UserAPI.Models;
+using UserAPI.Models.DTO;
 
 namespace UserAPI.Models.DTO
 {

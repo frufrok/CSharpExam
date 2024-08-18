@@ -1,4 +1,4 @@
-﻿namespace CSharpExamUserAPI.Models.DTO
+﻿namespace UserAPI.Models.DTO
 {
     public class UserDto
     {

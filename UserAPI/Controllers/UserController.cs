@@ -1,6 +1,6 @@
-﻿using CSharpExamUserAPI.Models;
-using CSharpExamUserAPI.Models.DTO;
-using CSharpExamUserAPI.Repository;
+﻿using UserAPI.Models;
+using UserAPI.Models.DTO;
+using UserAPI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

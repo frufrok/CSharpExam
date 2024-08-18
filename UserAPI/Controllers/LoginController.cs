@@ -1,16 +1,8 @@
-﻿using CSharpExamUserAPI.Models;
-using CSharpExamUserAPI.Models.DTO;
-using CSharpExamUserAPI.Repository;
+﻿using UserAPI.Models;
+using UserAPI.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-using UserAPI.Models.DTO;
+using UserAPI.Authentication;
 
 namespace UserAPI.Controllers
 {
@@ -18,12 +10,12 @@ namespace UserAPI.Controllers
     [Route("[controller]")]
     public class LoginController : ControllerBase
     {
-        private readonly IConfiguration _config;
         private readonly IUsersRepository _userRepository;
-        public LoginController(IConfiguration config, IUsersRepository userRepository)
+        private readonly ITokenSource _tokenSource;
+        public LoginController(IUsersRepository userRepository, ITokenSource tokenSource)
         {
-            _config = config;
             _userRepository = userRepository;
+            _tokenSource = tokenSource;
         }
 
         [AllowAnonymous]
@@ -62,8 +54,8 @@ namespace UserAPI.Controllers
                 ActionResult result(string email, string password)
                 {
                     var user = _userRepository.UserCheck(email, password);
-
-                    var token = CreateToken(user);
+                    
+                    var token = _tokenSource.CreateToken(user.Email, user.RoleId, user.Guid);
 
                     return Ok(token);
                 }
@@ -73,39 +65,6 @@ namespace UserAPI.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        }
-
-        public static class RSATools
-        {
-            public static RSA GetPrivateKey()
-            {
-                var f = System.IO.File.ReadAllText("rsa/private_key.pem");
-                var rsa = RSA.Create();
-                rsa.ImportFromPem(f);
-                return rsa;
-            }
-        }
-  
-        private string CreateToken(UserDto user)
-        {
-            var key = new RsaSecurityKey(RSATools.GetPrivateKey());
-            var credentials = new SigningCredentials(
-                key, SecurityAlgorithms.RsaSha256);
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Email),
-                new Claim(ClaimTypes.Role, user.RoleId.ToString()),
-                new Claim(ClaimTypes.SerialNumber, user.Guid.ToString())
-            };
-
-            var token = new JwtSecurityToken(
-                _config["Jwt:Issuer"],
-                _config["Jwt:Audience"],
-                claims,
-                expires: DateTime.Now.AddMinutes(15),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private ActionResult DoIfEmailAndPasswordAreValid(string email, string password, Func<string,string,ActionResult> workToDo)

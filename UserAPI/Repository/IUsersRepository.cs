@@ -1,7 +1,7 @@
-﻿using CSharpExamUserAPI.Models;
-using CSharpExamUserAPI.Models.DTO;
+﻿using UserAPI.Models;
+using UserAPI.Models.DTO;
 
-namespace CSharpExamUserAPI.Repository
+namespace UserAPI.Repository
 {
     public interface IUsersRepository
     {
