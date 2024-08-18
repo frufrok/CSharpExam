@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using UserAPI.Controllers;
+using UserAPI.Authorization;
 
 namespace CSharpExamUserAPI.Controllers
 {
@@ -13,9 +14,11 @@ namespace CSharpExamUserAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUsersRepository _userRepository;
-        public UserController(IUsersRepository userRepository)
+        private readonly IControllerUserSource _currentUserSource;
+        public UserController(IUsersRepository userRepository, IControllerUserSource controllerUserSource)
         {
             _userRepository = userRepository;
+            _currentUserSource = controllerUserSource;
         }
 
         [AllowAnonymous]
@@ -93,7 +96,7 @@ namespace CSharpExamUserAPI.Controllers
         {
             if (SharedMethods.EmailMatchesPattern(email))
             {
-                var self = GetCurrentUser();
+                var self = _currentUserSource.GetUser(this);
                 if (self != null)
                 {
                     if (!email.ToLower().Equals(self.Email.ToLower()))
@@ -122,23 +125,6 @@ namespace CSharpExamUserAPI.Controllers
             {
                 return StatusCode(400, "Email не соответствует шаблону.");
             }
-        }
-
-        private UserDto? GetCurrentUser()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null)
-            {
-                var userClaims = identity.Claims;
-                return new UserDto()
-                {
-                    Email = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
-                    RoleId = (RoleId)Enum.Parse(typeof(RoleId),
-                        userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value),
-                    Guid = Guid.Parse(userClaims.FirstOrDefault(x => x.Type == ClaimTypes.SerialNumber)?.Value)
-                };
-            }
-            else return null;
         }
     }
 }
