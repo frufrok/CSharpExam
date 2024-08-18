@@ -3,6 +3,7 @@ using UserAPI.Models.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using UserAPI.Authorization;
 
 namespace UserAPI.Controllers
 {
@@ -10,29 +11,23 @@ namespace UserAPI.Controllers
     [Route("[controller]")]
     public class RestrictedController : ControllerBase
     {
+        private readonly IControllerUserSource _userSource;
+
+        public RestrictedController(IControllerUserSource userSource)
+        {
+            _userSource = userSource;
+        }
+
         [HttpGet(template:"GetIdFromToken")]
         [Authorize(Roles = "ADMIN,USER")]
         public ActionResult GetIdFromToken()
         {
-            var user = GetCurrentUser();
-            return Ok(user.Guid);
-        }
-
-        private UserDto? GetCurrentUser()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null)
+            var user = _userSource.GetUser(this);
+            if (user != null)
             {
-                var userClaims = identity.Claims;
-                return new UserDto()
-                {
-                    Email = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
-                    RoleId = (RoleId)Enum.Parse(typeof(RoleId),
-                        userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value),
-                    Guid = Guid.Parse(userClaims.FirstOrDefault(x => x.Type == ClaimTypes.SerialNumber)?.Value)
-                };
+                return Ok(user.Guid);
             }
-            else return null;
+            else return StatusCode(400, "Для получения информации необходима аутентификация.");
         }
     }
 }

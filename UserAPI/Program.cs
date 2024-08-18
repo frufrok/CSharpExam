@@ -11,6 +11,7 @@ using System.Text;
 using UserAPI.Authentication;
 using UserAPI.Models.DTO;
 using UserAPI.rsa;
+using UserAPI.Authorization;
 
 namespace CSharpExamUserAPI
 {
@@ -76,6 +77,9 @@ namespace CSharpExamUserAPI
             
             // Решение: Зарегистрирован сервис, предоставляющий синглтон репозитория.
             builder.Services.AddSingleton<IUsersRepository, UsersRepository>();
+
+            // Решение: Регистрация сервиса, предоставляющего информацию о пользователе из запроса.
+            builder.Services.AddScoped<IControllerUserSource, ClaimsUserSource>();
 
             // Решение: Зарегистрирован сервис аутентификации.
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
