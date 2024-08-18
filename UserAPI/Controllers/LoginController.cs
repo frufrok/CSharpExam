@@ -42,7 +42,7 @@ namespace UserAPI.Controllers
                     return StatusCode(400, "Пользователь с таким email уже зарегистрирован.");
                 }
             }
-            return DoIfEmailAndPasswordAreValid(email, password, registration);
+            return this.DoIfEmailAndPasswordAreValid(email, password, registration);
         }
 
         [AllowAnonymous]
@@ -59,37 +59,11 @@ namespace UserAPI.Controllers
 
                     return Ok(token);
                 }
-                return DoIfEmailAndPasswordAreValid(email, password, result);
+                return this.DoIfEmailAndPasswordAreValid(email, password, result);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
-            }
-        }
-
-        private ActionResult DoIfEmailAndPasswordAreValid(string email, string password, Func<string,string,ActionResult> workToDo)
-        {
-            if (SharedMethods.EmailMatchesPattern(email))
-            {
-                if (SharedMethods.PasswordMatchesLengthRequirement(password))
-                {
-                    if (SharedMethods.PasswordMatchesPattern(password))
-                    {
-                        return workToDo.Invoke(email, password);
-                    }
-                    else
-                    {
-                        return StatusCode(400, "Пароль не соответсвует шаблону: он должен содержать хотя бы по одной букве в нижнем и верхнем регистрах и хотя бы одну цифру.");
-                    }
-                }
-                else
-                {
-                    return StatusCode(400, "Пароль имеет некорректную длинну. Задайте пароль длиной от 8 до 32 символов.");
-                }
-            }
-            else
-            {
-                return StatusCode(400, "Email не соответствует шаблону.");
             }
         }
     }
