@@ -22,7 +22,9 @@ namespace UserAPI.Controllers
             return regex.Matches(password).Count() > 0;
         }
 
-        public static ActionResult DoIfEmailAndPasswordAreValid(this ControllerBase controller, string email, string password, Func<string, string, ActionResult> workToDo)
+        public static ActionResult DoIfEmailAndPasswordAreValid(
+            this ControllerBase controller, string email, string password, 
+            Func<string, string, ActionResult> workToDo)
         {
             if (SharedMethods.EmailMatchesPattern(email))
             {

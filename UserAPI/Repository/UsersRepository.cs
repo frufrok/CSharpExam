@@ -71,9 +71,9 @@ namespace UserAPI.Repository
             else throw new ArgumentException("В списке пользователей нет пользователя с указанным email.");
         }
 
-        public UserDto UserCheck(string Email, string password)
+        public UserDto UserCheck(string email, string password)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Email == Email);
+            var user = _context.Users.FirstOrDefault(x => x.Email.ToLower().Equals(email.ToLower()));
 
             if (user == null) throw new Exception("User not found");
 

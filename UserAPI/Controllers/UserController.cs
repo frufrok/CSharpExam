@@ -73,8 +73,15 @@ namespace CSharpExamUserAPI.Controllers
                 {
                     if (Enum.IsDefined(typeof(RoleId), roleId))
                     {
-                        var id = _userRepository.AddUser(email, password, RoleId.ADMIN);
-                        return Ok(id);
+                        if (_userRepository.EmailIsFree(email))
+                        {
+                            var id = _userRepository.AddUser(email, password, (RoleId)roleId);
+                            return Ok(id);
+                        }
+                        else
+                        {
+                            return StatusCode(400, $"Пользователь с email \"{email}\" уже существует");
+                        }
                     }
                     else
                     {
