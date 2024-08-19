@@ -51,7 +51,7 @@
       ],
       "UpstreamPathTemplate": "/Message/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post" ],
-      "SwaggerKey": "UserAPI"
+      "SwaggerKey": "MessageAPI"
     }
   ],
 
